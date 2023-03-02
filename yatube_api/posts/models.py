@@ -25,7 +25,8 @@ class Post(models.Model):
         related_name='posts', blank=True, null=True,
     )
 
-    # Не проходит pytest с этой проверкой на одиновый пост. Видимо тест делает одинаковые посты)
+    # Не проходит pytest с этой проверкой на одиновый пост.
+    # Видимо тест делает одинаковые посты)
     # class Meta:
     #     constraints = [
     #         models.UniqueConstraint(
