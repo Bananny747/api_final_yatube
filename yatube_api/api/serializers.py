@@ -38,16 +38,6 @@ class PostSerializer(serializers.ModelSerializer):
         fields = '__all__'
         model = Post
 
-        # Не проходит pytest с этой проверкой на одиновый пост. Видимо тест
-        # делает одинаковые посты)
-        # validators = [
-        #     UniqueTogetherValidator(
-        #         queryset=Post.objects.all(),
-        #         fields=('text', 'author'),
-        #         message='А вы точно не создавали такой пост раньше?'
-        #     )
-        # ]
-
 
 class FollowSerializer(serializers.ModelSerializer):
     following = SlugRelatedField(slug_field='username',
@@ -56,7 +46,7 @@ class FollowSerializer(serializers.ModelSerializer):
                             default=serializers.CurrentUserDefault(),)
 
     class Meta:
-        fields = '__all__'
+        exclude = ['id']
         model = Follow
 
         validators = [

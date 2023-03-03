@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
-from posts.models import Comment, Follow, Group, Post
-from rest_framework import filters, viewsets
+from posts.models import Group, Post
+from rest_framework import filters, mixins, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 
 from .permissions import IsAuthorOrReadOnlyPermission, UsersFollowPermission
@@ -12,14 +12,21 @@ from .serializers import (
 )
 
 
-class FollowViewSet(viewsets.ModelViewSet):
+# Понимаю, что делаю то, что умеет ListCreateAPIView,
+# просто захотелось вспомнить миксины.
+class CreateListViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
+                        viewsets.GenericViewSet):
+    pass
+
+
+class FollowViewSet(CreateListViewSet):
     serializer_class = FollowSerializer
     permission_classes = (UsersFollowPermission,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('following__username',)
 
     def get_queryset(self):
-        new_queryset = Follow.objects.filter(user=self.request.user)
+        new_queryset = self.request.user.follower.all()
         return new_queryset
 
     def perform_create(self, serializer):
@@ -46,8 +53,8 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorOrReadOnlyPermission,)
 
     def get_queryset(self):
-        post_id = self.kwargs.get('post_id')
-        new_queryset = Comment.objects.filter(post=post_id)
+        post = get_object_or_404(Post, id=self.kwargs.get('post_id'))
+        new_queryset = post.comments.all()
         return new_queryset
 
     def perform_create(self, serializer):
